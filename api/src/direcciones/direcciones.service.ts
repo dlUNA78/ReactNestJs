@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateDireccionDto } from './dto/create-direccion.dto';
@@ -37,14 +37,18 @@ export class DireccionesService {
     updateDireccionDto: UpdateDireccionDto,
   ): Promise<Direccion> {
     const { id_cliente_fk, ...rest } = updateDireccionDto;
-    const direccionToUpdate = { ...rest };
 
-    if (id_cliente_fk) {
-      direccionToUpdate['cliente'] = { id_cliente: id_cliente_fk };
+    const direccion = await this.direccionRepository.preload({
+      id_direccion: id,
+      ...rest,
+      ...(id_cliente_fk && { cliente: { id_cliente: id_cliente_fk } }),
+    });
+
+    if (!direccion) {
+      throw new NotFoundException(`Dirección con ID ${id} no encontrada`);
     }
 
-    await this.direccionRepository.update(id, direccionToUpdate);
-    return this.findOne(id);
+    return this.direccionRepository.save(direccion);
   }
 
   remove(id: number) {

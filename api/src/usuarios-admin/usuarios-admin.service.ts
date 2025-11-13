@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -32,7 +32,7 @@ export class UsuariosAdminService {
     return this.usuariosAdminRepository.find({ relations: ['rol'] });
   }
 
-  findOne(id: number) {
+  findOne(id: number): Promise<UsuariosAdmin | null> {
     return this.usuariosAdminRepository.findOne({
       where: { id_usuario: id },
       relations: ['rol'],
@@ -43,19 +43,23 @@ export class UsuariosAdminService {
     id: number,
     updateUsuariosAdminDto: UpdateUsuariosAdminDto,
   ): Promise<UsuariosAdmin> {
-    const { password_hash, id_rol_fk, ...rest } = updateUsuariosAdminDto;
+    const { id_rol_fk, ...rest } = updateUsuariosAdminDto;
 
-    const adminToUpdate = { ...rest };
-
-    if (password_hash) {
-      adminToUpdate['password_hash'] = await bcrypt.hash(password_hash, 10);
-    }
-    if (id_rol_fk) {
-      adminToUpdate['rol'] = { id_rol: id_rol_fk };
+    if (rest.password_hash) {
+      rest.password_hash = await bcrypt.hash(rest.password_hash, 10);
     }
 
-    await this.usuariosAdminRepository.update(id, adminToUpdate);
-    return this.findOne(id);
+    const admin = await this.usuariosAdminRepository.preload({
+      id_usuario: id,
+      ...rest,
+      ...(id_rol_fk && { rol: { id_rol: id_rol_fk } }),
+    });
+
+    if (!admin) {
+      throw new NotFoundException(`Usuario admin con ID ${id} no encontrado`);
+    }
+
+    return this.usuariosAdminRepository.save(admin);
   }
 
   remove(id: number) {
@@ -63,7 +67,7 @@ export class UsuariosAdminService {
   }
 
   // Method for auth service
-  findOneByUsername(username: string): Promise<UsuariosAdmin | undefined> {
+  findOneByUsername(username: string): Promise<UsuariosAdmin | null> {
     return this.usuariosAdminRepository.findOne({
       where: { username },
       relations: ['rol'],

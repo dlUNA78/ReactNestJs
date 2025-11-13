@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateVariantesProductoDto } from './dto/create-variantes-producto.dto';
@@ -40,17 +40,19 @@ export class VariantesProductoService {
     updateVarianteDto: UpdateVariantesProductoDto,
   ): Promise<VariantesProducto> {
     const { id_producto_fk, id_talla_fk, ...rest } = updateVarianteDto;
-    const varianteToUpdate = { ...rest };
 
-    if (id_producto_fk) {
-      varianteToUpdate['producto'] = { id_producto: id_producto_fk };
-    }
-    if (id_talla_fk) {
-      varianteToUpdate['talla'] = { id_talla: id_talla_fk };
+    const variante = await this.variantesRepository.preload({
+      id_variante: id,
+      ...rest,
+      ...(id_producto_fk && { producto: { id_producto: id_producto_fk } }),
+      ...(id_talla_fk && { talla: { id_talla: id_talla_fk } }),
+    });
+
+    if (!variante) {
+      throw new NotFoundException(`Variante de producto con ID ${id} no encontrada`);
     }
 
-    await this.variantesRepository.update(id, varianteToUpdate);
-    return this.findOne(id);
+    return this.variantesRepository.save(variante);
   }
 
   remove(id: number) {

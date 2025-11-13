@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCarritoItemDto } from './dto/create-carrito-item.dto';
@@ -40,17 +40,19 @@ export class CarritoItemsService {
     updateCarritoItemDto: UpdateCarritoItemDto,
   ): Promise<CarritoItem> {
     const { id_cliente_fk, id_variante_fk, ...rest } = updateCarritoItemDto;
-    const itemToUpdate = { ...rest };
 
-    if (id_cliente_fk) {
-      itemToUpdate['cliente'] = { id_cliente: id_cliente_fk };
-    }
-    if (id_variante_fk) {
-      itemToUpdate['variante'] = { id_variante: id_variante_fk };
+    const item = await this.carritoItemRepository.preload({
+      id_carrito_item: id,
+      ...rest,
+      ...(id_cliente_fk && { cliente: { id_cliente: id_cliente_fk } }),
+      ...(id_variante_fk && { variante: { id_variante: id_variante_fk } }),
+    });
+
+    if (!item) {
+      throw new NotFoundException(`Item de carrito con ID ${id} no encontrado`);
     }
 
-    await this.carritoItemRepository.update(id, itemToUpdate);
-    return this.findOne(id);
+    return this.carritoItemRepository.save(item);
   }
 
   remove(id: number) {

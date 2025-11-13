@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -37,15 +37,23 @@ export class ClientesService {
     id: number,
     updateClienteDto: UpdateClienteDto,
   ): Promise<Cliente> {
-    const { password_hash, ...rest } = updateClienteDto;
-    const updateData = { ...rest };
-
-    if (password_hash) {
-      updateData['password_hash'] = await bcrypt.hash(password_hash, 10);
+    if (updateClienteDto.password_hash) {
+      updateClienteDto.password_hash = await bcrypt.hash(
+        updateClienteDto.password_hash,
+        10,
+      );
     }
 
-    await this.clienteRepository.update(id, updateData);
-    return this.findOne(id);
+    const cliente = await this.clienteRepository.preload({
+      id_cliente: id,
+      ...updateClienteDto,
+    });
+
+    if (!cliente) {
+      throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
+    }
+
+    return this.clienteRepository.save(cliente);
   }
 
   remove(id: number) {

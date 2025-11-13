@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateTallaDto } from './dto/create-talla.dto';
@@ -21,13 +21,21 @@ export class TallasService {
     return this.tallaRepository.find();
   }
 
-  findOne(id: number): Promise<Talla> {
+  findOne(id: number): Promise<Talla | null> {
     return this.tallaRepository.findOneBy({ id_talla: id });
   }
 
   async update(id: number, updateTallaDto: UpdateTallaDto): Promise<Talla> {
-    await this.tallaRepository.update(id, updateTallaDto);
-    return this.findOne(id);
+    const talla = await this.tallaRepository.preload({
+      id_talla: id,
+      ...updateTallaDto,
+    });
+
+    if (!talla) {
+      throw new NotFoundException(`Talla con ID ${id} no encontrada`);
+    }
+
+    return this.tallaRepository.save(talla);
   }
 
   remove(id: number) {

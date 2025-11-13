@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCategoriaDto } from './dto/create-categoria.dto';
@@ -21,7 +21,7 @@ export class CategoriasService {
     return this.categoriaRepository.find();
   }
 
-  findOne(id: number): Promise<Categoria> {
+  findOne(id: number): Promise<Categoria | null> {
     return this.categoriaRepository.findOneBy({ id_categoria: id });
   }
 
@@ -29,8 +29,16 @@ export class CategoriasService {
     id: number,
     updateCategoriaDto: UpdateCategoriaDto,
   ): Promise<Categoria> {
-    await this.categoriaRepository.update(id, updateCategoriaDto);
-    return this.findOne(id);
+    const categoria = await this.categoriaRepository.preload({
+      id_categoria: id,
+      ...updateCategoriaDto,
+    });
+
+    if (!categoria) {
+      throw new NotFoundException(`Categoría con ID ${id} no encontrada`);
+    }
+
+    return this.categoriaRepository.save(categoria);
   }
 
   remove(id: number) {

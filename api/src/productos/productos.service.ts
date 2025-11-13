@@ -1,4 +1,8 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryFailedError } from 'typeorm';
 import { CreateProductoDto } from './dto/create-producto.dto';
@@ -38,17 +42,19 @@ export class ProductosService {
     updateProductoDto: UpdateProductoDto,
   ): Promise<Producto> {
     const { id_categoria_fk, id_marca_fk, ...rest } = updateProductoDto;
-    const productoToUpdate = { ...rest };
 
-    if (id_categoria_fk) {
-      productoToUpdate['categoria'] = { id_categoria: id_categoria_fk };
-    }
-    if (id_marca_fk) {
-      productoToUpdate['marca'] = { id_marca: id_marca_fk };
+    const producto = await this.productosRepository.preload({
+      id_producto: id,
+      ...rest,
+      ...(id_categoria_fk && { categoria: { id_categoria: id_categoria_fk } }),
+      ...(id_marca_fk && { marca: { id_marca: id_marca_fk } }),
+    });
+
+    if (!producto) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
     }
 
-    await this.productosRepository.update(id, productoToUpdate);
-    return this.findOne(id);
+    return this.productosRepository.save(producto);
   }
 
   async remove(id: number) {
@@ -56,7 +62,10 @@ export class ProductosService {
       const result = await this.productosRepository.delete(id);
       return result;
     } catch (error) {
-      if (error instanceof QueryFailedError && error.driverError.code === '23503') {
+      if (
+        error instanceof QueryFailedError &&
+        error.driverError.code === '23503'
+      ) {
         throw new ConflictException(
           'No se puede eliminar: Este producto es parte de una orden vendida.',
         );

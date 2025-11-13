@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateMetodoPagoClienteDto } from './dto/create-metodos-pago-cliente.dto';
-import { UpdateMetodoPagoClienteDto } from './dto/update-metodos-pago-cliente.dto';
+import { CreateMetodosPagoClienteDto } from './dto/create-metodos-pago-cliente.dto';
+import { UpdateMetodosPagoClienteDto } from './dto/update-metodos-pago-cliente.dto';
 import { MetodosPagoCliente } from './entities/metodos-pago-cliente.entity';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class MetodosPagoClienteService {
   ) {}
 
   create(
-    createMetodoDto: CreateMetodoPagoClienteDto,
+    createMetodoDto: CreateMetodosPagoClienteDto,
   ): Promise<MetodosPagoCliente> {
     const { id_cliente_fk, ...rest } = createMetodoDto;
     const newMetodo = this.metodosPagoRepository.create({
@@ -36,17 +36,21 @@ export class MetodosPagoClienteService {
 
   async update(
     id: number,
-    updateMetodoDto: UpdateMetodoPagoClienteDto,
+    updateMetodoDto: UpdateMetodosPagoClienteDto,
   ): Promise<MetodosPagoCliente> {
     const { id_cliente_fk, ...rest } = updateMetodoDto;
-    const metodoToUpdate = { ...rest };
 
-    if (id_cliente_fk) {
-      metodoToUpdate['cliente'] = { id_cliente: id_cliente_fk };
+    const metodo = await this.metodosPagoRepository.preload({
+      id_metodo_pago: id,
+      ...rest,
+      ...(id_cliente_fk && { cliente: { id_cliente: id_cliente_fk } }),
+    });
+
+    if (!metodo) {
+      throw new NotFoundException(`Método de pago con ID ${id} no encontrado`);
     }
 
-    await this.metodosPagoRepository.update(id, metodoToUpdate);
-    return this.findOne(id);
+    return this.metodosPagoRepository.save(metodo);
   }
 
   remove(id: number) {

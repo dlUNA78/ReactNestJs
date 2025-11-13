@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateDetallesOrdenDto } from './dto/create-detalles-orden.dto';
@@ -38,17 +38,19 @@ export class DetallesOrdenService {
     updateDetalleDto: UpdateDetallesOrdenDto,
   ): Promise<DetallesOrden> {
     const { id_orden_fk, id_variante_fk, ...rest } = updateDetalleDto;
-    const detalleToUpdate = { ...rest };
 
-    if (id_orden_fk) {
-      detalleToUpdate['orden'] = { id_orden: id_orden_fk };
-    }
-    if (id_variante_fk) {
-      detalleToUpdate['variante'] = { id_variante: id_variante_fk };
+    const detalle = await this.detalleRepository.preload({
+      id_detalle_orden: id,
+      ...rest,
+      ...(id_orden_fk && { orden: { id_orden: id_orden_fk } }),
+      ...(id_variante_fk && { variante: { id_variante: id_variante_fk } }),
+    });
+
+    if (!detalle) {
+      throw new NotFoundException(`Detalle de orden con ID ${id} no encontrado`);
     }
 
-    await this.detalleRepository.update(id, detalleToUpdate);
-    return this.findOne(id);
+    return this.detalleRepository.save(detalle);
   }
 
   remove(id: number) {
