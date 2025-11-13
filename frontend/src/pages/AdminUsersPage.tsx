@@ -7,8 +7,8 @@ interface IAdminUser {
   id_usuario: number;
   nombre: string;
   username: string;
-  role: {
-    // La API ya nos da el rol anidado
+  rol: { // CORRECCIÓN: El objeto se llama 'rol' en la API, no 'role'
+    // La API nos da el rol anidado
     nombre_rol: string;
   };
 }
@@ -93,7 +93,7 @@ export const AdminUsersPage = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm">{user.username}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                    {user.role?.nombre_rol || 'N/A'}
+                    {user.rol?.nombre_rol || 'N/A'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
