@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import axios, { AxiosError } from 'axios'; // Importa AxiosError
+import axios, { AxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 
-// Interfaz para los productos (de tu API)
+// 1. CORREGIDO: La interfaz debe usar 'producto_id'
 interface IProductoAdmin {
-  producto_id: number;
+  id_producto: number; // <-- VUELTO A 'producto_id'
   nombre: string;
   precio: number;
   stock: number;
@@ -19,8 +19,8 @@ export const AdminProductsPage = () => {
   // Función para cargar los productos
   const fetchProductos = async () => {
     try {
-      // No reseteamos el error aquí para que se mantenga visible si falla
       setLoading(true);
+      // La URL de la API es correcta
       const response = await axios.get('http://localhost:3000/productos');
       setProductos(response.data);
     } catch (err) {
@@ -36,9 +36,8 @@ export const AdminProductsPage = () => {
     fetchProductos();
   }, []);
 
-  // --- Función para Eliminar Producto (Actualizada) ---
+  // Función para Eliminar Producto
   const handleDelete = async (id: number) => {
-    // Pide confirmación
     if (!window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       return;
     }
@@ -49,12 +48,9 @@ export const AdminProductsPage = () => {
     } catch (err) {
       console.error('Error al eliminar producto:', err);
 
-      // 1. Revisa si es un error de Axios
       if (err instanceof AxiosError && err.response) {
-        // 2. Muestra el mensaje de error amigable que viene del backend (ej. 409 Conflict)
         alert(`Error: ${err.response.data.message}`);
       } else {
-        // 3. Error genérico
         alert('No se pudo eliminar el producto.');
       }
     }
@@ -69,7 +65,7 @@ export const AdminProductsPage = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Gestión de Productos</h1>
         <Link
-          to="/admin/productos/nuevo" // Ruta para el formulario de creación
+          to="/admin/productos/nuevo"
           className="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700"
         >
           + Crear Producto
@@ -91,21 +87,32 @@ export const AdminProductsPage = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {productos.map((producto) => (
-              <tr key={producto.producto_id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{producto.producto_id}</td>
+              // 2. CORREGIDO: usa producto.producto_id para la key
+              <tr key={producto.id_producto}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {producto.id_producto}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{producto.nombre}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${Number(producto.precio).toFixed(2)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{producto.categoria?.nombre || 'N/A'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{producto.marca?.nombre || 'N/A'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  ${Number(producto.precio).toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {producto.categoria?.nombre || 'N/A'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {producto.marca?.nombre || 'N/A'}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  {/* 3. CORREGIDO: usa producto.producto_id */}
                   <Link
-                    to={`/admin/productos/editar/${producto.producto_id}`} // Ruta para editar
+                    to={`/admin/productos/editar/${producto.id_producto}`}
                     className="text-indigo-600 hover:text-indigo-900 mr-4"
                   >
                     Editar
                   </Link>
+                  {/* 4. CORREGIDO: usa producto.producto_id */}
                   <button
-                    onClick={() => handleDelete(producto.producto_id)}
+                    onClick={() => handleDelete(producto.id_producto)}
                     className="text-red-600 hover:text-red-900"
                   >
                     Eliminar

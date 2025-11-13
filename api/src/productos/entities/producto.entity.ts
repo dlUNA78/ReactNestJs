@@ -21,7 +21,7 @@ export class Producto {
   descripcion: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, name: 'precio_base' })
-  precio_base: number;
+  precio: number;
 
   @ManyToOne(() => Categoria, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'id_categoria_fk' })

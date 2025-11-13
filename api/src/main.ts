@@ -11,7 +11,7 @@ async function bootstrap() {
   });
 
   // Set a global prefix for all routes
-  app.setGlobalPrefix('api');
+  // app.setGlobalPrefix('api');
 
   // Use a global validation pipe to validate all incoming request payloads
   app.useGlobalPipes(
@@ -23,5 +23,6 @@ async function bootstrap() {
   );
 
   await app.listen(process.env.PORT ?? 3000);
+  console.log(`Application is running on: ${process.env.PORT ?? 3000}`);
 }
 bootstrap();

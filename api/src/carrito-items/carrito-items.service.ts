@@ -24,7 +24,12 @@ export class CarritoItemsService {
 
   findAll() {
     return this.carritoItemRepository.find({
-      relations: ['cliente', 'variante'],
+      relations: [
+        'cliente',
+        'variante',
+        'variante.producto', // <-- Añade esta línea
+        'variante.talla', // <-- Y esta (la necesitarás también)
+      ],
     });
   }
 
