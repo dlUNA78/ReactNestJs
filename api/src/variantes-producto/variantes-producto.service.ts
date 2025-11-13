@@ -28,11 +28,15 @@ export class VariantesProductoService {
     return this.variantesRepository.find({ relations: ['producto', 'talla'] });
   }
 
-  findOne(id: number) {
-    return this.variantesRepository.findOne({
+  async findOne(id: number): Promise<VariantesProducto> {
+    const variante = await this.variantesRepository.findOne({
       where: { id_variante: id },
       relations: ['producto', 'talla'],
     });
+    if (!variante) {
+      throw new NotFoundException(`Variante de producto con ID ${id} no encontrada`);
+    }
+    return variante;
   }
 
   async update(
@@ -55,7 +59,10 @@ export class VariantesProductoService {
     return this.variantesRepository.save(variante);
   }
 
-  remove(id: number) {
-    return this.variantesRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.variantesRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Variante de producto con ID ${id} no encontrada`);
+    }
   }
 }

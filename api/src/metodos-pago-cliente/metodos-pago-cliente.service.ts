@@ -27,11 +27,15 @@ export class MetodosPagoClienteService {
     return this.metodosPagoRepository.find({ relations: ['cliente'] });
   }
 
-  findOne(id: number) {
-    return this.metodosPagoRepository.findOne({
+  async findOne(id: number): Promise<MetodosPagoCliente> {
+    const metodo = await this.metodosPagoRepository.findOne({
       where: { id_metodo_pago: id },
       relations: ['cliente'],
     });
+    if (!metodo) {
+      throw new NotFoundException(`Método de pago con ID ${id} no encontrado`);
+    }
+    return metodo;
   }
 
   async update(
@@ -53,7 +57,10 @@ export class MetodosPagoClienteService {
     return this.metodosPagoRepository.save(metodo);
   }
 
-  remove(id: number) {
-    return this.metodosPagoRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.metodosPagoRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Método de pago con ID ${id} no encontrado`);
+    }
   }
 }

@@ -26,11 +26,15 @@ export class DetallesOrdenService {
     return this.detalleRepository.find({ relations: ['orden', 'variante'] });
   }
 
-  findOne(id: number) {
-    return this.detalleRepository.findOne({
+  async findOne(id: number): Promise<DetallesOrden> {
+    const detalle = await this.detalleRepository.findOne({
       where: { id_detalle_orden: id },
       relations: ['orden', 'variante'],
     });
+    if (!detalle) {
+      throw new NotFoundException(`Detalle de orden con ID ${id} no encontrado`);
+    }
+    return detalle;
   }
 
   async update(
@@ -53,7 +57,10 @@ export class DetallesOrdenService {
     return this.detalleRepository.save(detalle);
   }
 
-  remove(id: number) {
-    return this.detalleRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.detalleRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Detalle de orden con ID ${id} no encontrado`);
+    }
   }
 }

@@ -25,11 +25,15 @@ export class DireccionesService {
     return this.direccionRepository.find({ relations: ['cliente'] });
   }
 
-  findOne(id: number) {
-    return this.direccionRepository.findOne({
+  async findOne(id: number): Promise<Direccion> {
+    const direccion = await this.direccionRepository.findOne({
       where: { id_direccion: id },
       relations: ['cliente'],
     });
+    if (!direccion) {
+      throw new NotFoundException(`Dirección con ID ${id} no encontrada`);
+    }
+    return direccion;
   }
 
   async update(
@@ -51,7 +55,10 @@ export class DireccionesService {
     return this.direccionRepository.save(direccion);
   }
 
-  remove(id: number) {
-    return this.direccionRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.direccionRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Dirección con ID ${id} no encontrada`);
+    }
   }
 }

@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { DireccionesService } from './direcciones.service';
 import { CreateDireccionDto } from './dto/create-direccion.dto';
@@ -26,20 +27,20 @@ export class DireccionesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.direccionesService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.direccionesService.findOne(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateDireccionDto: UpdateDireccionDto,
   ) {
-    return this.direccionesService.update(+id, updateDireccionDto);
+    return this.direccionesService.update(id, updateDireccionDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.direccionesService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.direccionesService.remove(id);
   }
 }

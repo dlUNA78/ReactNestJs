@@ -1,11 +1,13 @@
 import {
   Controller,
+  Controller,
   Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
   UseInterceptors,
   ClassSerializerInterceptor,
 } from '@nestjs/common';
@@ -29,20 +31,20 @@ export class UsuariosAdminController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usuariosAdminService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usuariosAdminService.findOne(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUsuariosAdminDto: UpdateUsuariosAdminDto,
   ) {
-    return this.usuariosAdminService.update(+id, updateUsuariosAdminDto);
+    return this.usuariosAdminService.update(id, updateUsuariosAdminDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usuariosAdminService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.usuariosAdminService.remove(id);
   }
 }

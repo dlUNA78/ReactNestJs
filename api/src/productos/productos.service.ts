@@ -30,11 +30,16 @@ export class ProductosService {
     return this.productosRepository.find({ relations: ['categoria', 'marca'] });
   }
 
-  findOne(id: number) {
-    return this.productosRepository.findOne({
+  async findOne(id: number): Promise<Producto> {
+    const producto = await this.productosRepository.findOne({
       where: { id_producto: id },
       relations: ['categoria', 'marca'],
     });
+
+    if (!producto) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+    }
+    return producto;
   }
 
   async update(
@@ -57,20 +62,10 @@ export class ProductosService {
     return this.productosRepository.save(producto);
   }
 
-  async remove(id: number) {
-    try {
-      const result = await this.productosRepository.delete(id);
-      return result;
-    } catch (error) {
-      if (
-        error instanceof QueryFailedError &&
-        error.driverError.code === '23503'
-      ) {
-        throw new ConflictException(
-          'No se puede eliminar: Este producto es parte de una orden vendida.',
-        );
-      }
-      throw error;
+  async remove(id: number): Promise<void> {
+    const result = await this.productosRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { MarcasService } from './marcas.service';
 import { CreateMarcaDto } from './dto/create-marca.dto';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
@@ -18,17 +18,17 @@ export class MarcasController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.marcasService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.marcasService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMarcaDto: UpdateMarcaDto) {
-    return this.marcasService.update(+id, updateMarcaDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateMarcaDto: UpdateMarcaDto) {
+    return this.marcasService.update(id, updateMarcaDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.marcasService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.marcasService.remove(id);
   }
 }

@@ -21,8 +21,12 @@ export class RolesService {
     return this.roleRepository.find();
   }
 
-  findOne(id: number): Promise<Role | null> {
-    return this.roleRepository.findOneBy({ id_rol: id });
+  async findOne(id: number): Promise<Role> {
+    const role = await this.roleRepository.findOneBy({ id_rol: id });
+    if (!role) {
+      throw new NotFoundException(`Rol con ID ${id} no encontrado`);
+    }
+    return role;
   }
 
   async update(id: number, updateRoleDto: UpdateRoleDto): Promise<Role> {
@@ -38,7 +42,10 @@ export class RolesService {
     return this.roleRepository.save(role);
   }
 
-  remove(id: number) {
-    return this.roleRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.roleRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Rol con ID ${id} no encontrado`);
+    }
   }
 }

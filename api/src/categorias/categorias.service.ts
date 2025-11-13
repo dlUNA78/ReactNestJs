@@ -21,8 +21,14 @@ export class CategoriasService {
     return this.categoriaRepository.find();
   }
 
-  findOne(id: number): Promise<Categoria | null> {
-    return this.categoriaRepository.findOneBy({ id_categoria: id });
+  async findOne(id: number): Promise<Categoria> {
+    const categoria = await this.categoriaRepository.findOneBy({
+      id_categoria: id,
+    });
+    if (!categoria) {
+      throw new NotFoundException(`Categoría con ID ${id} no encontrada`);
+    }
+    return categoria;
   }
 
   async update(
@@ -41,7 +47,10 @@ export class CategoriasService {
     return this.categoriaRepository.save(categoria);
   }
 
-  remove(id: number) {
-    return this.categoriaRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.categoriaRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Categoría con ID ${id} no encontrada`);
+    }
   }
 }

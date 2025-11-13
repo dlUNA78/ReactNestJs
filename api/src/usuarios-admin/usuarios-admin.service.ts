@@ -32,11 +32,15 @@ export class UsuariosAdminService {
     return this.usuariosAdminRepository.find({ relations: ['rol'] });
   }
 
-  findOne(id: number): Promise<UsuariosAdmin | null> {
-    return this.usuariosAdminRepository.findOne({
+  async findOne(id: number): Promise<UsuariosAdmin> {
+    const admin = await this.usuariosAdminRepository.findOne({
       where: { id_usuario: id },
       relations: ['rol'],
     });
+    if (!admin) {
+      throw new NotFoundException(`Usuario admin con ID ${id} no encontrado`);
+    }
+    return admin;
   }
 
   async update(
@@ -62,8 +66,11 @@ export class UsuariosAdminService {
     return this.usuariosAdminRepository.save(admin);
   }
 
-  remove(id: number) {
-    return this.usuariosAdminRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.usuariosAdminRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Usuario admin con ID ${id} no encontrado`);
+    }
   }
 
   // Method for auth service

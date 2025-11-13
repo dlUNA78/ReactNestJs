@@ -21,8 +21,12 @@ export class MarcasService {
     return this.marcaRepository.find();
   }
 
-  findOne(id: number): Promise<Marca | null> {
-    return this.marcaRepository.findOneBy({ id_marca: id });
+  async findOne(id: number): Promise<Marca> {
+    const marca = await this.marcaRepository.findOneBy({ id_marca: id });
+    if (!marca) {
+      throw new NotFoundException(`Marca con ID ${id} no encontrada`);
+    }
+    return marca;
   }
 
   async update(id: number, updateMarcaDto: UpdateMarcaDto): Promise<Marca> {
@@ -38,7 +42,10 @@ export class MarcasService {
     return this.marcaRepository.save(marca);
   }
 
-  remove(id: number) {
-    return this.marcaRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.marcaRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Marca con ID ${id} no encontrada`);
+    }
   }
 }

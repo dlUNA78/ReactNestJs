@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { OrdenesService } from './ordenes.service';
 import { CreateOrdenDto } from './dto/create-orden.dto';
@@ -26,17 +27,20 @@ export class OrdenesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordenesService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.ordenesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrdenDto: UpdateOrdenDto) {
-    return this.ordenesService.update(+id, updateOrdenDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateOrdenDto: UpdateOrdenDto,
+  ) {
+    return this.ordenesService.update(id, updateOrdenDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ordenesService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.ordenesService.remove(id);
   }
 }

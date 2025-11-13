@@ -12,14 +12,27 @@ export class CarritoItemsService {
     private readonly carritoItemRepository: Repository<CarritoItem>,
   ) {}
 
-  create(createCarritoItemDto: CreateCarritoItemDto): Promise<CarritoItem> {
-    const { id_cliente_fk, id_variante_fk, ...rest } = createCarritoItemDto;
-    const newItem = this.carritoItemRepository.create({
-      ...rest,
-      cliente: { id_cliente: id_cliente_fk },
-      variante: { id_variante: id_variante_fk },
+  async create(createCarritoItemDto: CreateCarritoItemDto): Promise<CarritoItem> {
+    const { id_cliente_fk, id_variante_fk, cantidad } = createCarritoItemDto;
+
+    const existingItem = await this.carritoItemRepository.findOne({
+      where: {
+        cliente: { id_cliente: id_cliente_fk },
+        variante: { id_variante: id_variante_fk },
+      },
     });
-    return this.carritoItemRepository.save(newItem);
+
+    if (existingItem) {
+      existingItem.cantidad += cantidad;
+      return this.carritoItemRepository.save(existingItem);
+    } else {
+      const newItem = this.carritoItemRepository.create({
+        cantidad,
+        cliente: { id_cliente: id_cliente_fk },
+        variante: { id_variante: id_variante_fk },
+      });
+      return this.carritoItemRepository.save(newItem);
+    }
   }
 
   findAll() {
@@ -33,24 +46,24 @@ export class CarritoItemsService {
     });
   }
 
-  findOne(id: number) {
-    return this.carritoItemRepository.findOne({
+  async findOne(id: number): Promise<CarritoItem> {
+    const item = await this.carritoItemRepository.findOne({
       where: { id_carrito_item: id },
       relations: ['cliente', 'variante'],
     });
+    if (!item) {
+      throw new NotFoundException(`Item de carrito con ID ${id} no encontrado`);
+    }
+    return item;
   }
 
   async update(
     id: number,
     updateCarritoItemDto: UpdateCarritoItemDto,
   ): Promise<CarritoItem> {
-    const { id_cliente_fk, id_variante_fk, ...rest } = updateCarritoItemDto;
-
     const item = await this.carritoItemRepository.preload({
       id_carrito_item: id,
-      ...rest,
-      ...(id_cliente_fk && { cliente: { id_cliente: id_cliente_fk } }),
-      ...(id_variante_fk && { variante: { id_variante: id_variante_fk } }),
+      ...updateCarritoItemDto,
     });
 
     if (!item) {
@@ -60,7 +73,10 @@ export class CarritoItemsService {
     return this.carritoItemRepository.save(item);
   }
 
-  remove(id: number) {
-    return this.carritoItemRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.carritoItemRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Item de carrito con ID ${id} no encontrado`);
+    }
   }
 }

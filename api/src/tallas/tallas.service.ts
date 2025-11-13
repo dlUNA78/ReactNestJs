@@ -21,8 +21,12 @@ export class TallasService {
     return this.tallaRepository.find();
   }
 
-  findOne(id: number): Promise<Talla | null> {
-    return this.tallaRepository.findOneBy({ id_talla: id });
+  async findOne(id: number): Promise<Talla> {
+    const talla = await this.tallaRepository.findOneBy({ id_talla: id });
+    if (!talla) {
+      throw new NotFoundException(`Talla con ID ${id} no encontrada`);
+    }
+    return talla;
   }
 
   async update(id: number, updateTallaDto: UpdateTallaDto): Promise<Talla> {
@@ -38,7 +42,10 @@ export class TallasService {
     return this.tallaRepository.save(talla);
   }
 
-  remove(id: number) {
-    return this.tallaRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.tallaRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Talla con ID ${id} no encontrada`);
+    }
   }
 }

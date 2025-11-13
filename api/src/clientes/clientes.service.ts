@@ -29,8 +29,12 @@ export class ClientesService {
     return this.clienteRepository.find();
   }
 
-  findOne(id: number) {
-    return this.clienteRepository.findOneBy({ id_cliente: id });
+  async findOne(id: number): Promise<Cliente> {
+    const cliente = await this.clienteRepository.findOneBy({ id_cliente: id });
+    if (!cliente) {
+      throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
+    }
+    return cliente;
   }
 
   async update(
@@ -56,7 +60,10 @@ export class ClientesService {
     return this.clienteRepository.save(cliente);
   }
 
-  remove(id: number) {
-    return this.clienteRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.clienteRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
+    }
   }
 }

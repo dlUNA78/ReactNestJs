@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { VariantesProductoService } from './variantes-producto.service';
 import { CreateVariantesProductoDto } from './dto/create-variantes-producto.dto';
 import { UpdateVariantesProductoDto } from './dto/update-variantes-producto.dto';
@@ -18,17 +18,17 @@ export class VariantesProductoController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.variantesProductoService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.variantesProductoService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVariantesProductoDto: UpdateVariantesProductoDto) {
-    return this.variantesProductoService.update(+id, updateVariantesProductoDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateVariantesProductoDto: UpdateVariantesProductoDto) {
+    return this.variantesProductoService.update(id, updateVariantesProductoDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.variantesProductoService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.variantesProductoService.remove(id);
   }
 }

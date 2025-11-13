@@ -28,11 +28,15 @@ export class OrdenesService {
     });
   }
 
-  findOne(id: number) {
-    return this.ordenRepository.findOne({
+  async findOne(id: number): Promise<Orden> {
+    const orden = await this.ordenRepository.findOne({
       where: { id_orden: id },
       relations: ['cliente', 'direccion_envio'],
     });
+    if (!orden) {
+      throw new NotFoundException(`Orden con ID ${id} no encontrada`);
+    }
+    return orden;
   }
 
   async update(id: number, updateOrdenDto: UpdateOrdenDto): Promise<Orden> {
@@ -54,7 +58,10 @@ export class OrdenesService {
     return this.ordenRepository.save(orden);
   }
 
-  remove(id: number) {
-    return this.ordenRepository.delete(id);
+  async remove(id: number): Promise<void> {
+    const result = await this.ordenRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Orden con ID ${id} no encontrada`);
+    }
   }
 }
