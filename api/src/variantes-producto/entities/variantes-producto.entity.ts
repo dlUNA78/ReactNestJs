@@ -4,9 +4,12 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Producto } from '../../productos/entities/producto.entity';
 import { Talla } from '../../tallas/entities/talla.entity';
+import { DetallesOrden } from '../../detalles-orden/entities/detalles-orden.entity';
+import { CarritoItem } from '../../carrito-items/entities/carrito-item.entity';
 
 @Entity('variantes_producto')
 export class VariantesProducto {
@@ -29,4 +32,12 @@ export class VariantesProducto {
 
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'imagen_url' })
   imagen_url: string;
+
+  @OneToMany(() => DetallesOrden, (detalle) => detalle.variante, {
+    cascade: true,
+  })
+  detalles_orden: DetallesOrden[];
+
+  @OneToMany(() => CarritoItem, (item) => item.variante, { cascade: true })
+  carrito_items: CarritoItem[];
 }

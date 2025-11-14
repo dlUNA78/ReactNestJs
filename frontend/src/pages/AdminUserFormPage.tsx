@@ -73,13 +73,14 @@ export const AdminUserFormPage = () => {
     try {
       // Prepara el payload para la API
       // El DTO del backend espera 'password_hash'
-      // CORRECCIÓN: El DTO espera 'id_rol_fk', no 'role'.
       const payload: any = {
-        nombre: data.nombre,
-        username: data.username,
-        id_rol_fk: Number(data.role), // Mapea 'role' del form a 'id_rol_fk' del DTO
+        ...data,
+        role: Number(data.role), // Asegura que el ID sea número
         password_hash: data.password, // Mapea 'password' a 'password_hash'
       };
+
+      // Limpieza del payload
+      delete payload.password; // Elimina el campo 'password'
 
       if (isEditMode && !payload.password_hash) {
         // Si estamos editando y la contraseña está vacía,

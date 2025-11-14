@@ -11,11 +11,11 @@ export class Categoria {
   @Column({ type: 'text', nullable: true })
   descripcion: string;
 
-  // @Column({
-  //   type: 'varchar',
-  //   length: 255,
-  //   nullable: true,
-  //   name: 'imagen_principal_url',
-  // })
-  // imagen_principal_url: string;
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    name: 'imagen_principal_url',
+  })
+  imagen_principal_url: string;
 }

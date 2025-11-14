@@ -37,4 +37,9 @@ export class ProductosController {
     // 4. Ya no necesitas convertirlo con +id, porque ya es un 'number'
     return this.productosService.remove(id);
   }
+
+  @Delete(':id/force')
+  forceRemove(@Param('id', ParseIntPipe) id: number) {
+    return this.productosService.forceRemove(id);
+  }
 }

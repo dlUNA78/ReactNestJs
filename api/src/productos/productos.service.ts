@@ -68,4 +68,26 @@ export class ProductosService {
       throw new NotFoundException(`Producto con ID ${id} no encontrado`);
     }
   }
+
+  async forceRemove(id: number): Promise<Producto> {
+    // 1. Carga el producto Y TODAS sus dependencias en cascada
+    const producto = await this.productosRepository.findOne({
+      where: { id_producto: id },
+      relations: [
+        'variantes',
+        'variantes.detalles_orden',
+        'variantes.carrito_items',
+      ],
+    });
+
+    if (!producto) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+    }
+
+    // 2. 'remove(objeto)' (a diferencia de 'delete(id)')
+    // activará las opciones { cascade: true } que pusimos en las entidades.
+    await this.productosRepository.remove(producto);
+
+    return producto; // Devuelve el objeto borrado
+  }
 }

@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Categoria } from '../../categorias/entities/categoria.entity';
 import { Marca } from '../../marcas/entities/marca.entity';
+import { VariantesProducto } from '../../variantes-producto/entities/variantes-producto.entity';
 
 @Entity('productos')
 export class Producto {
@@ -21,7 +23,7 @@ export class Producto {
   descripcion: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, name: 'precio_base' })
-  precio: number;
+  precio_base: number;
 
   @ManyToOne(() => Categoria, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'id_categoria_fk' })
@@ -41,4 +43,9 @@ export class Producto {
     name: 'imagen_principal_url',
   })
   imagen_principal_url: string;
+
+  @OneToMany(() => VariantesProducto, (variante) => variante.producto, {
+    cascade: true,
+  })
+  variantes: VariantesProducto[];
 }

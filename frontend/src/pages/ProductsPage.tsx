@@ -13,7 +13,7 @@ interface IMarcaLite {
 }
 
 interface IProducto {
-  id_producto: number;
+  producto_id: number;
   nombre: string;
   precio: number;
   stock: number;
@@ -163,11 +163,11 @@ export const ProductsPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredAndSortedProducts.map((producto) => (
                 <div
-                  key={producto.id_producto}
+                  key={producto.producto_id}
                   className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 overflow-hidden group"
                 >
                   {/* --- BLOQUE DE IMAGEN CORREGIDO --- */}
-                  <Link to={`/producto/${producto.id_producto}`} className="block relative overflow-hidden">
+                  <Link to={`/producto/${producto.producto_id}`} className="block relative overflow-hidden">
                     <div className="aspect-square bg-gray-100">
                       <img
                         // 1. Usa la URL principal, o el placeholder si es null
@@ -218,7 +218,7 @@ export const ProductsPage = () => {
                         ${Number(producto.precio).toFixed(2)}
                       </p>
                       <Link
-                        to={`/producto/${producto.id_producto}`}
+                        to={`/producto/${producto.producto_id}`}
                         className="flex items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300 transform group-hover:scale-110 shadow-lg"
                         title="Ver detalles"
                       >

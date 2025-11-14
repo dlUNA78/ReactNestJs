@@ -23,7 +23,8 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
 
       // Custom messages based on table name from detail
       if (detail.includes('productos')) {
-        userMessage = 'No se puede eliminar: Este producto (o sus variantes) ya son parte de una orden vendida.';
+        userMessage =
+          'Este producto no se puede eliminar porque está en uso en una orden o carrito. ¿Deseas forzar el borrado?';
       } else if (detail.includes('categorias')) {
         userMessage = 'No se puede eliminar la categoría porque está asociada a productos existentes.';
       } else if (detail.includes('marcas')) {
