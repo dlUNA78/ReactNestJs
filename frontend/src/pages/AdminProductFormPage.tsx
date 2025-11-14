@@ -31,7 +31,6 @@ interface IFormInput {
   nombre: string;
   descripcion?: string;
   precio: number;
-  stock?: number;
   id_categoria_fk: number;
   id_marca_fk: number;
   // NUEVO: 'FileList' es el tipo que devuelve un input type="file"
@@ -146,8 +145,7 @@ export const AdminProductFormPage = () => {
       
       const processedData = {
         ...data,
-        precio: Number(data.precio),
-        stock: Number(data.stock) || 0,
+        precio_base: Number(data.precio),
         id_categoria_fk: Number(data.id_categoria_fk),
         id_marca_fk: Number(data.id_marca_fk),
         imagen_principal_url: imageUrl, // <-- Añade la URL al DTO
@@ -245,10 +243,6 @@ export const AdminProductFormPage = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700">Precio</label>
             <input {...register('precio', { required: true, valueAsNumber: true })} type="number" step="0.01" className="mt-1 p-2 w-full border rounded-md"/>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Stock Base (Opcional)</label>
-            <input {...register('stock', { valueAsNumber: true })} type="number" className="mt-1 p-2 w-full border rounded-md"/>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

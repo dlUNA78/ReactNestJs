@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 // 1. Interfaz para los datos del formulario
 interface IAdminLoginInput {
     username: string;
-    password_hash: string; // El nombre coincide con el DTO del backend
+    password: string; // El nombre coincide con el DTO del backend
 }
 
 export const AdminLoginPage = () => {
@@ -78,11 +78,11 @@ export const AdminLoginPage = () => {
                         <input
                             id="password"
                             type="password"
-                            {...register('password_hash', { required: 'La contraseña es requerida' })}
+                            {...register('password', { required: 'La contraseña es requerida' })}
                             className="mt-1 block w-full rounded-md border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
-                        {errors.password_hash && (
-                            <p className="mt-1 text-sm text-red-600">{errors.password_hash.message}</p>
+                        {errors.password && (
+                            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
                         )}
                     </div>
 

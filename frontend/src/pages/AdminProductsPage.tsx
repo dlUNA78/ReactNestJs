@@ -6,8 +6,7 @@ import { Link } from 'react-router-dom';
 interface IProductoAdmin {
   id_producto: number; // <-- VUELTO A 'producto_id'
   nombre: string;
-  precio: number;
-  stock: number;
+  precio_base: number;
   categoria: { nombre: string };
   marca: { nombre: string };
 }
@@ -48,9 +47,20 @@ export const AdminProductsPage = () => {
     } catch (err) {
       console.error('Error al eliminar producto:', err);
 
-      if (err instanceof AxiosError && err.response) {
-        alert(`Error: ${err.response.data.message}`);
+      if (err instanceof AxiosError && err.response && err.response.status === 409) {
+        // Si el error es 409, muestra un 'confirm'
+        if (window.confirm(err.response.data.message)) {
+          // Si el usuario acepta, llama al borrado forzado
+          try {
+            await axios.delete(`http://localhost:3000/productos/${id}/force`);
+            fetchProductos(); // Recarga la lista
+          } catch (forceErr) {
+            console.error('Error en el borrado forzado:', forceErr);
+            alert('No se pudo forzar la eliminación del producto.');
+          }
+        }
       } else {
+        // Para cualquier otro error, muestra una alerta simple
         alert('No se pudo eliminar el producto.');
       }
     }
@@ -94,7 +104,7 @@ export const AdminProductsPage = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{producto.nombre}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  ${Number(producto.precio).toFixed(2)}
+                  ${Number(producto.precio_base).toFixed(2)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {producto.categoria?.nombre || 'N/A'}
